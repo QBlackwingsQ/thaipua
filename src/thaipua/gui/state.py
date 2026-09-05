@@ -296,4 +296,6 @@ def group_composites_by_consonant(pua_map: dict[str, str]) -> dict[int, list[Com
 
 def pua_specs_for_consonant(pua_map: dict[str, str], cons_uni: int) -> list[CompositeSpec]:
     """Return the ascending-`pua_code` sorted specs for `cons_uni` in `pua_map`."""
-    return group_composites_by_consonant(pua_map).get(cons_uni, [])
+    specs = [spec for spec in iter_composite_specs(pua_map) if spec.cons_uni == cons_uni]
+    specs.sort(key=lambda s: s.pua_code)
+    return specs

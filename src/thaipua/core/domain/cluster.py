@@ -1,6 +1,7 @@
 """Thai cluster model: the canonical domain unit for every map key."""
 
 import re
+from functools import lru_cache
 from typing import Annotated, Any
 
 from pydantic import BaseModel, BeforeValidator, ConfigDict, PlainSerializer, model_validator
@@ -97,8 +98,13 @@ ThaiKey = Annotated[ThaiCluster, BeforeValidator(_coerce_key), PlainSerializer(_
 """Map-key type: invalid stacking is unconstructible instead of validated after the fact."""
 
 
+@lru_cache(maxsize=8192)
 def try_key(value: str) -> ThaiCluster | None:
-    """Parse untrusted input leniently, returning `None` for the caller to report."""
+    """Parse untrusted input leniently, returning `None` for the caller to report.
+
+    Results are cached per input value; `ThaiCluster` is frozen, so shared
+    instances are safe to return.
+    """
     try:
         return _coerce_key(value)
     except ValueError:

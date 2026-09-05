@@ -8,6 +8,7 @@ from thaipua.core.domain.cluster import ThaiCluster, try_key
 from thaipua.core.font.map_validation import IssueSeverity, validate_pua_map
 from thaipua.core.font.specs import decompose_thai_cluster, iter_composite_specs
 from thaipua.core.layout import canonical_layout
+from thaipua.gui.state import group_composites_by_consonant, pua_specs_for_consonant
 
 
 def test_decompose_accepts_any_mark_order() -> None:
@@ -57,3 +58,18 @@ def test_shipped_map_decomposes_fully() -> None:
     mapping = canonical_layout(0xE000)
     assert len(mapping) == 2016
     assert all(decompose_thai_cluster(key) is not None for key in mapping)
+
+
+def test_try_key_shares_cached_instances() -> None:
+    assert try_key("ก่") is try_key("ก่")
+    assert try_key("ก่") == ThaiCluster.from_key("ก่")
+
+
+def test_pua_specs_for_consonant_matches_grouped() -> None:
+    mapping = canonical_layout(0xE000)
+    grouped = group_composites_by_consonant(mapping)
+    for cons_uni, expected in grouped.items():
+        assert pua_specs_for_consonant(mapping, cons_uni) == expected
+    assert pua_specs_for_consonant(mapping, 0x0041) == []
+    for specs in grouped.values():
+        assert [s.pua_code for s in specs] == sorted(s.pua_code for s in specs)

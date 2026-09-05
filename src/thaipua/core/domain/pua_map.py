@@ -1,4 +1,4 @@
-"""Injective PUA map with the reverse as a derived view."""
+"""Injective PUA map; collisions cannot be constructed."""
 
 from typing import Annotated
 
@@ -28,23 +28,6 @@ class PuaMap(BaseModel):
                 raise ValueError(f"U+{code:04X} shared by multiple keys")
             seen[code] = cluster
         return self
-
-    @property
-    def reverse(self) -> dict[int, ThaiCluster]:
-        """Return the codepoint-to-key view, derived on demand rather than synced."""
-        out: dict[int, ThaiCluster] = {}
-        for key, code in self.mapping.items():
-            cluster = key if isinstance(key, ThaiCluster) else ThaiCluster.from_key(str(key))
-            out[int(code)] = cluster
-        return out
-
-    def codepoint_for(self, cluster: ThaiCluster) -> int | None:
-        """Return the codepoint for `cluster`, or `None` when unmaterialized."""
-        for key, code in self.mapping.items():
-            own = key if isinstance(key, ThaiCluster) else ThaiCluster.from_key(str(key))
-            if own == cluster:
-                return int(code)
-        return None
 
 
 def build_pua_map(entries: dict[str, int]) -> PuaMap:

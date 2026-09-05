@@ -440,6 +440,10 @@ class ResolvedOffset(BaseModel):
         return self.per_glyph + self.global_offset + self.base
 
 
+_EMPTY_CONSONANT_SETTINGS: ConsonantSettings = ConsonantSettings()
+"""Shared empty entry returned for unset consonants."""
+
+
 class PlacementSettings(BaseModel):
     """Root settings object holding font-global mark offsets and per-consonant overrides."""
 
@@ -451,8 +455,9 @@ class PlacementSettings(BaseModel):
     consonants: dict[_ConsonantCodepoint, ConsonantSettings] = Field(default_factory=dict)
 
     def for_consonant(self, cons_uni: int) -> ConsonantSettings:
-        """Return the per-consonant entry, or an empty default when unset."""
-        return self.consonants.get(cons_uni, ConsonantSettings())
+        """Return the per-consonant entry, or the shared empty default when unset."""
+        entry = self.consonants.get(cons_uni)
+        return _EMPTY_CONSONANT_SETTINGS if entry is None else entry
 
     def resolve(
         self,
@@ -648,7 +653,7 @@ def _base_offsets_to_dict(base_offsets: dict[str, Offset]) -> dict[str, dict[str
     """Serialize base offsets in canonical role order, omitting zero deltas."""
     out: dict[str, dict[str, int]] = {}
     for role in BASE_OFFSET_ROLES:
-        off = base_offsets.get(role, Offset())
+        off = base_offsets.get(role, _ZERO_OFFSET)
         if off == _ZERO_OFFSET:
             continue
         out[role] = {"x": off.x, "y": off.y}
