@@ -1,4 +1,4 @@
-"""A4: installer gate, validator, and conflict scan answer from the single policy table."""
+"""Single slot-policy table behind the installer gate, validator, and conflict scan."""
 
 import pytest
 from conftest import FakeGlyf, FakeGlyph

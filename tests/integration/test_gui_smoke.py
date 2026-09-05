@@ -1,11 +1,8 @@
 """Offscreen GUI smoke: toolbar/grid/controls signals reach service state without modal dialogs."""
 
-import os
-from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
-import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from conftest import SAMPLE_FONT_PATH
 from fontTools.ttLib import TTFont
@@ -16,44 +13,9 @@ from thaipua.gui.main_window import MainWindow
 from thaipua.gui.state import current_mark_offset
 from thaipua.gui.widgets.pua_mapping_dialog import PuaMapTableModel
 
-# Headless runners have no display server; force offscreen before Qt picks a platform.
 # Paths that exec() a modal dialog (_on_pua_slots/_on_edit_mapping/_on_settings/_on_find_substitution)
 # stay out of this suite — a modal exec with no one to dismiss it hangs forever.
-os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-
-
-@pytest.fixture(scope="session")
-def qapp() -> Iterator[QApplication]:
-    """Share one QApplication; Qt reads the platform env on first construction."""
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication([])
-    assert isinstance(app, QApplication)
-    yield app
-    app.processEvents()
-
-
-@pytest.fixture
-def window(qapp: QApplication, tmp_path: Path) -> Iterator[MainWindow]:
-    """Build a window isolated to tmp paths; close without the dirty prompt on teardown."""
-    win = MainWindow()
-    win._service.set_layout_path(str(tmp_path / "layout.json"))
-    win._service.set_pua_map_path(str(tmp_path / "pua.json"))
-    yield win
-    win._state.dirty = False
-    win.close()
-    win.deleteLater()
-    qapp.processEvents()
-
-
-@pytest.fixture
-def loaded_window(window: MainWindow, monkeypatch: MonkeyPatch, tmp_path: Path) -> MainWindow:
-    """Run the real open-font flow with a stubbed file dialog and no stem profile on disk."""
-    monkeypatch.setattr(QFileDialog, "getOpenFileName", lambda *args, **kwargs: (str(SAMPLE_FONT_PATH), ""))
-    monkeypatch.setattr(window._service, "default_profile_path", lambda: tmp_path / "absent.json")
-    window._toolbar.open_font_requested.emit()
-    assert window._service.is_loaded
-    return window
+# QApplication comes from the shared `qapp` fixture, which forces the offscreen platform.
 
 
 def test_window_builds_unloaded(window: MainWindow) -> None:

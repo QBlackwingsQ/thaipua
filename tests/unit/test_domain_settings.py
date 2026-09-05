@@ -1,4 +1,4 @@
-"""Slice 1: strict Pydantic domain settings — codec, tier rule, resolve(), with_* copies."""
+"""Strict Pydantic placement settings: codec, tier rule, resolve, and copies."""
 
 import pytest
 

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
-from conftest import SAMPLE_FONT_PATH, FakeGlyf, make_glyf
+from conftest import SAMPLE_FONT_PATH, FakeFont, FakeGlyf, make_glyf
 
 from thaipua.core.constants import PUA_RANGE_END
 from thaipua.core.domain.settings import (
@@ -30,23 +30,9 @@ from thaipua.core.layout import (
 from thaipua.gui.font_service import FontService
 
 
-class _FakeFont:
-    """Duck-typed `TTFont` exposing only `getBestCmap` and `get`."""
-
-    def __init__(self, cmap: dict[int, str], glyf: FakeGlyf | None = None) -> None:
-        self._cmap = cmap
-        self._glyf = glyf
-
-    def getBestCmap(self) -> dict[int, str]:
-        return self._cmap
-
-    def get(self, key: str) -> Any:
-        return self._glyf if key == "glyf" else None
-
-
 def _service_with_font(cmap: dict[int, str], glyf: FakeGlyf | None = None) -> FontService:
     service = FontService()
-    service._gen = cast(ThaiPuaFontGenerator, SimpleNamespace(font=_FakeFont(cmap, glyf)))
+    service._gen = cast(ThaiPuaFontGenerator, SimpleNamespace(font=FakeFont(cmap, glyf)))
     return service
 
 

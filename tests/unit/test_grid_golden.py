@@ -1,4 +1,4 @@
-"""Phase 0 golden test: the v2 stride-60 grid is frozen by digest, not by description."""
+"""Frozen stride-60 grid digest for the v2 layout."""
 
 import hashlib
 

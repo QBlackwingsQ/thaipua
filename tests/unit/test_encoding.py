@@ -3,6 +3,8 @@
 import json
 from pathlib import Path
 
+from conftest import write_encoding_map
+
 from thaipua.core.domain.grid import EXCLUDED_COMBOS
 from thaipua.core.layout import canonical_layout
 from thaipua.core.text.encoding import (
@@ -13,26 +15,20 @@ from thaipua.core.text.encoding import (
 )
 
 
-def _write_map(tmp_path: Path, mapping: dict[str, str], name: str = "pua.json") -> Path:
-    map_path = tmp_path / name
-    map_path.write_text(json.dumps(mapping, ensure_ascii=False), encoding="utf-8")
-    return map_path
-
-
 def test_longest_match_wins_over_prefix(tmp_path: Path) -> None:
-    encoding_map = load_encoding_map(_write_map(tmp_path, {"ก": "\ue001", "กั": "\ue000"}))
+    encoding_map = load_encoding_map(write_encoding_map(tmp_path, {"ก": "\ue001", "กั": "\ue000"}))
     assert encoding_map is not None
     transform = build_encode_transform(encoding_map)
     assert transform("กัก") == "\ue000\ue001"
 
 
 def test_load_decode_table_inverts_mapping(tmp_path: Path) -> None:
-    decode_table = load_decode_table(_write_map(tmp_path, {"กั": "\ue000"}))
+    decode_table = load_decode_table(write_encoding_map(tmp_path, {"กั": "\ue000"}))
     assert decode_table == {0xE000: "กั"}
 
 
 def test_unusable_map_files_return_none(tmp_path: Path) -> None:
-    empty_map = _write_map(tmp_path, {})
+    empty_map = write_encoding_map(tmp_path, {})
     broken_json = tmp_path / "broken.json"
     broken_json.write_text("{oops", encoding="utf-8")
     assert load_encoding_map(tmp_path / "missing.json") is None
@@ -58,7 +54,7 @@ def test_normalize_sara_am_base_and_tone_variants() -> None:
 
 def test_encode_transform_normalizes_before_substituting(tmp_path: Path) -> None:
     mapping = {"ก": "\ue000", "ํ": "\ue001", "่": "\ue002", "า": "\ue003"}
-    encoding_map = load_encoding_map(_write_map(tmp_path, mapping))
+    encoding_map = load_encoding_map(write_encoding_map(tmp_path, mapping))
     assert encoding_map is not None
     transform = build_encode_transform(encoding_map)
     assert transform("ก่ำ") == "\ue000\ue001\ue002\ue003"
@@ -73,7 +69,7 @@ def test_hole_clusters_partial_match_but_roundtrip_losslessly(tmp_path: Path) ->
     assert len(holes) == 11
     assert all(len(suffix) == 2 for suffix in holes)
     mapping = canonical_layout(0xE000)
-    map_path = _write_map(tmp_path, mapping)
+    map_path = write_encoding_map(tmp_path, mapping)
     encoding_map = load_encoding_map(map_path)
     decode_table = load_decode_table(map_path)
     assert encoding_map is not None

@@ -2,28 +2,14 @@
 
 from typing import Any
 
-from conftest import FakeCompositeGlyph, FakeGlyf, FakeGlyph
+from conftest import FakeCompositeGlyph, FakeFont, FakeGlyf, FakeGlyph
 
 from thaipua.core.font.occupancy import scan_pua_occupants
 from thaipua.core.font.ownership import SlotOwnership
 
 
-class _ScanFont:
-    """Duck-typed `TTFont` exposing `getBestCmap` and `get`."""
-
-    def __init__(self, cmap: dict[int, str], glyf: FakeGlyf | None) -> None:
-        self._cmap = cmap
-        self._glyf = glyf
-
-    def getBestCmap(self) -> dict[int, str]:
-        return self._cmap
-
-    def get(self, key: str) -> Any:
-        return self._glyf if key == "glyf" else None
-
-
-def _font(cmap: dict[int, str], glyphs: dict[str, Any] | None = None) -> _ScanFont:
-    return _ScanFont(cmap, FakeGlyf(glyphs) if glyphs is not None else None)
+def _font(cmap: dict[int, str], glyphs: dict[str, Any] | None = None) -> FakeFont:
+    return FakeFont(cmap, FakeGlyf(glyphs) if glyphs is not None else None)
 
 
 def test_scan_classifies_and_sorts_pua_slots_only() -> None:

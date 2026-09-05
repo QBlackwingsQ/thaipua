@@ -3,13 +3,13 @@
 from pathlib import Path
 
 import pytest
+from conftest import service_with_layout
 from pydantic import ValidationError
 
 from thaipua.core.commands import DocumentCommand, DocumentSnapshot
 from thaipua.core.domain.settings import Offset, default_placement_settings
 from thaipua.core.layout import LayoutState, load_layout_state
 from thaipua.core.session import ProjectSession
-from thaipua.gui.font_service import FontService
 
 
 def _nudge_settings(session: ProjectSession, cons_uni: int = 0x0E01) -> None:
@@ -123,16 +123,8 @@ def test_merged_with_rejects_other_keys() -> None:
     assert merged.label == "b"
 
 
-def _service_with_layout(tmp_path: Path) -> FontService:
-    service = FontService()
-    service.set_layout_path(str(tmp_path / "layout.json"))
-    service.set_pua_map_path(str(tmp_path / "pua.json"))
-    service.load_layout()
-    return service
-
-
 def test_service_override_undo_restores_approvals_and_persists(tmp_path: Path) -> None:
-    service = _service_with_layout(tmp_path)
+    service = service_with_layout(tmp_path)
     assert service.override_slots([0xE001]) == 1
     assert service.allowed_locked() == frozenset({0xE001})
     assert service.can_undo
@@ -147,7 +139,7 @@ def test_service_override_undo_restores_approvals_and_persists(tmp_path: Path) -
 
 
 def test_service_relocate_undo_restores_map(tmp_path: Path) -> None:
-    service = _service_with_layout(tmp_path)
+    service = service_with_layout(tmp_path)
     canonical = service.pua_map["ก่"]
     moved = service.relocate_keys(["ก่"])
     assert service.pua_map["ก่"] == chr(moved["ก่"]) != canonical

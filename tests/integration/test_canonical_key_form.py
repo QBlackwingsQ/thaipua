@@ -1,7 +1,9 @@
-"""Slice 1 pin: construction order is the stored key form; boundaries normalize input order."""
+"""Canonical key form: construction order is stored, every boundary normalizes mark order."""
 
 import json
 from pathlib import Path
+
+from conftest import service_with_layout
 
 from thaipua.core.constants import THAI_CONSONANT_CHARS
 from thaipua.core.domain.cluster import (
@@ -15,7 +17,6 @@ from thaipua.core.domain.thai import AboveVowel, ToneMark
 from thaipua.core.layout import canonical_layout, cluster_ordinal, load_layout_state
 from thaipua.core.pua_map import save_pua_map
 from thaipua.core.text.encoding import build_encode_transform, find_unshapable_spans, load_encoding_map
-from thaipua.gui.font_service import FontService
 
 NIKHAHIT = chr(AboveVowel.NIKHAHIT)
 MAI_EK = chr(ToneMark.MAI_EK)
@@ -29,7 +30,7 @@ SARA_U = chr(0x0E38)
 DIVERGENT_PAIRS = [(NIKHAHIT, chr(tone.value)) for tone in ToneMark]
 
 
-def _write_map(tmp_path: Path, mapping: dict[str, str]) -> Path:
+def _write_pua_map(tmp_path: Path, mapping: dict[str, str]) -> Path:
     map_path = tmp_path / "pua.json"
     save_pua_map(mapping, map_path)
     return map_path
@@ -68,7 +69,7 @@ def test_parser_accepts_both_mark_orders() -> None:
 
 def test_encoder_treats_both_mark_orders_identically(tmp_path: Path) -> None:
     mapping = canonical_layout(0xE000)
-    encoding_map = load_encoding_map(_write_map(tmp_path, mapping))
+    encoding_map = load_encoding_map(_write_pua_map(tmp_path, mapping))
     assert encoding_map is not None
     encode = build_encode_transform(encoding_map)
     cases = [("ก" + NIKHAHIT + MAI_EK, "ก" + MAI_EK + NIKHAHIT), ("ก" + SARA_U + MAI_THO, "ก" + MAI_THO + SARA_U)]
@@ -104,16 +105,8 @@ def test_normalization_preserves_offsets() -> None:
     assert find_unshapable_spans(canonical_cluster_text(text)) == find_unshapable_spans(text)
 
 
-def _service_with_layout(tmp_path: Path) -> FontService:
-    service = FontService()
-    service.set_layout_path(str(tmp_path / "layout.json"))
-    service.set_pua_map_path(str(tmp_path / "pua.json"))
-    service.load_layout()
-    return service
-
-
 def test_relocate_normalizes_reordered_keys(tmp_path: Path) -> None:
-    service = _service_with_layout(tmp_path)
+    service = service_with_layout(tmp_path)
     reordered = "ก" + MAI_EK + NIKHAHIT
     canonical = "ก" + NIKHAHIT + MAI_EK
     moved = service.relocate_keys([reordered])

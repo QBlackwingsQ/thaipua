@@ -52,7 +52,7 @@ src/thaipua/
                         # occupancy + pua-mapping dialogs, tooltips
 assets/fonts/           # Test fixtures (Sarabun-Regular.ttf)
 data/                   # Runtime state. Never written to by tests.
-tests/                  # test_*.py per module + offscreen GUI smoke tests
+tests/                  # unit/ (pure logic + fakes) + integration/ (font asset, FontService, Qt)
 ```
 
 ## Boundaries
@@ -149,7 +149,7 @@ def normalize_sara_am(content: str) -> str:
 - Integration tests use `SAMPLE_FONT_PATH` from `tests/conftest.py`.
 - GUI tests stub dialog components — an unstubbed modal will hang the suite.
 - Tests must not touch repo-root `data/`; use `tmp_path`.
-- Run a single file: `uv run pytest tests/test_layout.py -q`
+- Run a single file: `uv run pytest tests/unit/test_layout.py -q`
 
 ## Commits & PRs
 

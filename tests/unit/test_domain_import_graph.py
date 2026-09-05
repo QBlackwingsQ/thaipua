@@ -1,4 +1,4 @@
-"""G9: the domain layer stays free of fontTools/Qt/direct-IO dependencies."""
+"""Domain layer stays free of fontTools, Qt, and direct-IO dependencies."""
 
 import ast
 import subprocess
@@ -16,7 +16,7 @@ DOMAIN_MODULES: tuple[str, ...] = (
     "settings",
     "layout",
 )
-SRC_DIR = Path(__file__).resolve().parents[1] / "src"
+SRC_DIR = Path(__file__).resolve().parents[2] / "src"
 DOMAIN_DIR = SRC_DIR / "thaipua" / "core" / "domain"
 
 _HEAVY_TOP_LEVELS: frozenset[str] = frozenset({"fontTools", "PySide6", "PySide", "pathlib"})
@@ -102,7 +102,7 @@ def test_domain_modules_load_without_heavy_transitive_imports() -> None:
 
 
 def test_unstubbed_domain_import_skips_legacy_tree() -> None:
-    """Land A15: lazy `_reexports` keeps the unstubbed domain import cheap."""
+    """Lazy `_reexports` keeps the unstubbed domain import cheap."""
     proc = subprocess.run(
         [sys.executable, "-c", _UNSTUBBED_PROBE, str(SRC_DIR)],
         capture_output=True,
@@ -111,7 +111,7 @@ def test_unstubbed_domain_import_skips_legacy_tree() -> None:
         check=False,
     )
     assert proc.returncode == 0, f"unstubbed import failed:\n{proc.stdout}\n{proc.stderr}"
-    assert proc.stdout.strip() == "False", "lazy parents must not load fontTools (A15)"
+    assert proc.stdout.strip() == "False", "lazy parents must not load fontTools"
 
 
 def test_full_core_package_still_smoke_imports() -> None:

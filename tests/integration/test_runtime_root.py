@@ -1,4 +1,4 @@
-"""Unit tests for the injectable `RuntimeRoot` data-directory isolation (A14)."""
+"""Injectable `RuntimeRoot` data-directory isolation."""
 
 from pathlib import Path
 

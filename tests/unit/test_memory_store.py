@@ -1,4 +1,4 @@
-"""G8: document persistence runs against an in-memory store with zero disk IO."""
+"""Document persistence against an in-memory store with zero disk IO."""
 
 from pathlib import Path
 from typing import Any

@@ -1,4 +1,4 @@
-"""Slice 2 pin: `try_key` is the single cluster classifier behind every entry point."""
+"""Thai cluster classification through the single `try_key` entry point."""
 
 import logging
 

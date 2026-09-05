@@ -1,4 +1,4 @@
-"""Slice 3 pin: the domain `LayoutEngine` computes every production map; JSON is untouched."""
+"""Domain `LayoutEngine` as the source of truth for production maps."""
 
 import pytest
 
